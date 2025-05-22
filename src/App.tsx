@@ -23,28 +23,31 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          <AppSidebar />
-          <SidebarInset>
-            <SidebarTrigger />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/payments" element={<Payments />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/users" element={<Users />} />
-              <Route path="/settings" element={<Settings />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
+      <BrowserRouter>
+        <SidebarProvider>
+          <div className="min-h-screen flex w-full">
+            <AppSidebar />
+            <SidebarInset>
+              <SidebarTrigger />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/customers" element={<Customers />} />
+                <Route path="/payments" element={<Payments />} />
+                <Route path="/reports" element={<Reports />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/settings" element={<Settings />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </SidebarInset>
+          </div>
+        </SidebarProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );
 
 export default App;
+
