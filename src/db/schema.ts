@@ -1,64 +1,107 @@
 
-/**
- * Drizzle ORM schemas for POS modules
- * Copy these into your Drizzle schema definition.
- * If using Postgres, import from 'drizzle-orm/pg-core'.
- */
+// Drizzle ORM schemas for POS modules
 
-// import { pgTable, serial, varchar, real, integer, timestamp, date, text } from "drizzle-orm/pg-core";
+import { serial, text, integer, real, date, primaryKey, pgTable, boolean } from "drizzle-orm/pg-core";
 
-export const products = {
-  id: "serial primary key",
-  name: "varchar(60) not null",
-  description: "varchar(255)",
-  price: "real not null",
-  inStock: "integer not null default 0",
-  createdAt: "timestamp default now()",
-};
+// Products table
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  price: real("price").notNull(),
+  stock: integer("stock").notNull(),
+  createdAt: date("created_at").defaultNow(),
+  updatedAt: date("updated_at").defaultNow(),
+});
 
-export const orders = {
-  id: "serial primary key",
-  customerId: "integer references customers(id)",
-  orderDate: "timestamp default now()",
-  status: "varchar(30) not null",
-  totalAmount: "real not null",
-};
+// Customers table
+export const customers = pgTable("customers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  createdAt: date("created_at").defaultNow(),
+});
 
-export const customers = {
-  id: "serial primary key",
-  name: "varchar(120) not null",
-  email: "varchar(160) unique",
-  phone: "varchar(24)",
-  createdAt: "timestamp default now()",
-};
+// Orders table
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").notNull().references(() => customers.id),
+  orderDate: date("order_date").defaultNow(),
+  status: text("status").notNull(), // e.g. "Pending", "Completed"
+  userId: integer("user_id").notNull().references(() => users.id),
+  notes: text("notes"),
+  createdAt: date("created_at").defaultNow(),
+});
 
-export const payments = {
-  id: "serial primary key",
-  orderId: "integer references orders(id)",
-  paymentDate: "timestamp default now()",
-  amount: "real not null",
-  method: "varchar(30) not null",
-  status: "varchar(24) not null", // e.g. "completed", "pending"
-};
+// Order items table
+export const orderItems = pgTable("order_items", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull().references(() => orders.id),
+  productId: integer("product_id").notNull().references(() => products.id),
+  quantity: integer("quantity").notNull(),
+  unitPrice: real("unit_price").notNull(),
+});
 
-export const reports = {
-  id: "serial primary key",
-  title: "varchar(128) not null",
-  data: "text", // Could be JSON or summary
-  createdAt: "timestamp default now()",
-};
+// Payments table
+export const payments = pgTable("payments", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull().references(() => orders.id),
+  paymentDate: date("payment_date").defaultNow(),
+  amount: real("amount").notNull(),
+  method: text("method").notNull(), // e.g. "Cash"
+  status: text("status").notNull(), // e.g. "Completed"
+  upiRef: text("upi_ref"),
+});
 
-export const users = {
-  id: "serial primary key",
-  email: "varchar(160) unique not null",
-  name: "varchar(80)",
-  role: "varchar(24) not null default 'staff'",
-  createdAt: "timestamp default now()",
-};
+// Users table
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  role: text("role").notNull(), // e.g. "admin", "staff"
+  clerkId: text("clerk_id"), // for Clerk auth integration
+  createdAt: date("created_at").defaultNow(),
+});
 
-export const settings = {
-  id: "serial primary key",
-  key: "varchar(60) unique not null",
-  value: "varchar(1024)", // or json
-  updatedAt: "timestamp default now()",
-};
+// Settings table
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull(),
+  value: text("value").notNull(),
+  updatedAt: date("updated_at").defaultNow(),
+});
+
+// Reports table
+export const reports = pgTable("reports", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  data: text("data").notNull(),
+  createdAt: date("created_at").defaultNow(),
+});
+
+// Invoices table
+export const invoices = pgTable("invoices", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull().references(() => orders.id),
+  generatedByUserId: integer("generated_by_user_id").notNull().references(() => users.id),
+  logoUrl: text("logo_url"),
+  customNotes: text("custom_notes"),
+  businessInfo: text("business_info"),
+  createdAt: date("created_at").defaultNow(),
+});
+
+// Business (for branding on invoices)
+export const businesses = pgTable("businesses", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  ownerUserId: integer("owner_user_id").notNull().references(() => users.id),
+  logoUrl: text("logo_url"),
+  address: text("address"),
+  phone: text("phone"),
+  upi: text("upi"),
+  createdAt: date("created_at").defaultNow(),
+  updatedAt: date("updated_at").defaultNow(),
+});
+
